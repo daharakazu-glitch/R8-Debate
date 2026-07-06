@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate Speech Practice — Esports</title>
+<style>
+:root{
+  --ink:#1b2a41;
+  --paper:#f7f9fb;
+  --card:#ffffff;
+  --aff:#0e7c66;      /* affirmative green */
+  --aff-soft:#e2f3ee;
+  --neg:#b3432b;      /* negative red-brown */
+  --neg-soft:#f9e9e4;
+  --accent:#274b8f;
+  --line:#d8dfe8;
+  --gold:#c9a227;
+  --radius:14px;
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Avenir Next","Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
+  background:var(--paper);color:var(--ink);
+  min-height:100vh;
+}
+header{
+  background:var(--ink);color:#fff;
+  padding:1.1rem 1.2rem .9rem;
+}
+header h1{font-size:1.15rem;font-weight:700;letter-spacing:.02em}
+header .prop{
+  font-size:.8rem;color:#b8c6da;margin-top:.25rem;
+  font-style:italic;
+}
+.side-tabs{display:flex;gap:.5rem;padding:.8rem 1rem 0;max-width:760px;margin:0 auto}
+.side-tab{
+  flex:1;padding:.6rem;border:none;border-radius:10px 10px 0 0;
+  font-size:.95rem;font-weight:700;cursor:pointer;background:#e3e8ef;color:#66748a;
+}
+.side-tab.aff.active{background:var(--aff);color:#fff}
+.side-tab.neg.active{background:var(--neg);color:#fff}
+.speech-tabs{display:flex;gap:.4rem;padding:.6rem 1rem;max-width:760px;margin:0 auto;flex-wrap:wrap}
+.speech-tab{
+  padding:.45rem .9rem;border-radius:999px;border:1.5px solid var(--line);
+  background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;color:#54637a;
+}
+.speech-tab.active{border-color:currentColor}
+.aff-mode .speech-tab.active{color:var(--aff);background:var(--aff-soft)}
+.neg-mode .speech-tab.active{color:var(--neg);background:var(--neg-soft)}
+main{max-width:760px;margin:0 auto;padding:0 1rem 4rem}
+.speech-title{
+  margin:.6rem 0 .9rem;padding:.9rem 1rem;border-radius:var(--radius);
+  color:#fff;font-size:1rem;line-height:1.5;font-weight:700;
+}
+.aff-mode .speech-title{background:var(--aff)}
+.neg-mode .speech-title{background:var(--neg)}
+.speech-title small{display:block;font-weight:500;font-size:.75rem;opacity:.85;margin-top:.2rem}
+
+/* controls */
+.controls{
+  display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:.8rem 1rem;margin-bottom:1rem;
+}
+.controls label{font-size:.8rem;color:#54637a}
+.controls select,.controls input[type=range]{accent-color:var(--accent)}
+.btn{
+  border:none;border-radius:10px;padding:.55rem 1rem;font-size:.9rem;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;
+}
+.btn-play{background:var(--accent);color:#fff}
+.btn-stop{background:#e3e8ef;color:#42506a}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* sentence cards */
+.section{margin-bottom:1.1rem}
+.section-label{
+  font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:#8593a8;margin:0 0 .4rem .2rem;
+}
+.aff-mode .section-label{color:var(--aff)}
+.neg-mode .section-label{color:var(--neg)}
+.sentence{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:.75rem .9rem;margin-bottom:.5rem;
+}
+.sentence.playing{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.25)}
+.sent-text{font-size:.98rem;line-height:1.65;font-family:Georgia,"Times New Roman",serif}
+.sent-tools{display:flex;gap:.45rem;margin-top:.55rem;flex-wrap:wrap;align-items:center}
+.mini{
+  border:1.5px solid var(--line);background:#fff;border-radius:8px;
+  padding:.3rem .7rem;font-size:.78rem;font-weight:700;cursor:pointer;color:#42506a;
+  display:inline-flex;align-items:center;gap:.3rem;
+}
+.mini.listen{color:var(--accent);border-color:var(--accent)}
+.mini.rec{color:#b3432b;border-color:#b3432b}
+.mini.rec.recording{background:#b3432b;color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.65}}
+.score{
+  font-size:.78rem;font-weight:800;border-radius:8px;padding:.3rem .6rem;display:none;
+}
+.score.good{display:inline-block;background:#e2f3ee;color:#0e7c66}
+.score.mid{display:inline-block;background:#fdf3d7;color:#8a6d00}
+.score.low{display:inline-block;background:#f9e9e4;color:#b3432b}
+.diff{
+  display:none;margin-top:.5rem;font-size:.88rem;line-height:1.7;
+  font-family:Georgia,serif;border-top:1px dashed var(--line);padding-top:.5rem;
+}
+.diff.show{display:block}
+.diff .hit{color:#0e7c66}
+.diff .miss{color:#b3432b;text-decoration:underline wavy #b3432b 1px}
+.diff .heard{color:#54637a;font-size:.78rem;font-family:inherit;display:block;margin-top:.3rem;font-style:normal}
+.note{
+  font-size:.78rem;color:#8593a8;background:#eef2f7;border-radius:10px;
+  padding:.6rem .8rem;margin:.4rem 0 1rem;line-height:1.6;
+}
+.total-bar{
+  position:sticky;bottom:0;background:var(--ink);color:#fff;
+  padding:.7rem 1rem;display:none;align-items:center;gap:.8rem;justify-content:center;
+  font-size:.9rem;font-weight:700;
+}
+.total-bar.show{display:flex}
+.warn{
+  background:#fdf3d7;color:#8a6d00;border-radius:10px;padding:.6rem .8rem;
+  font-size:.8rem;margin:.5rem 0;line-height:1.6;display:none;
+}
+</style>
+</head>
+<body class="aff-mode">
+<header>
+  <h1>🎙️ Debate Speech Practice</h1>
+  <div class="prop">Proposition — Esports should be considered a sport</div>
+</header>
+
+<div class="side-tabs">
+  <button class="side-tab aff active" data-side="aff">Affirmative(肯定側)</button>
+  <button class="side-tab neg" data-side="neg">Negative(否定側)</button>
+</div>
+<div class="speech-tabs" id="speechTabs"></div>
+
+<main>
+  <div class="warn" id="srWarn">⚠️ このブラウザは音声認識に対応していないため、録音評価は使えません。Chrome / Edge / Safari での利用をおすすめします(お手本再生は使えます)。</div>
+  <div class="note">
+    ▶️ <b>全文再生</b>でスピーチ全体を通して聴けます。各文の <b>聴く</b> でお手本を再生、<b>録音</b> で自分の発話を評価できます(マイクの許可が必要です)。緑=認識できた語、赤=聴き取れなかった語です。
+  </div>
+  <div class="speech-title" id="speechTitle"></div>
+  <div class="controls">
+    <button class="btn btn-play" id="playAll">▶ 全文再生</button>
+    <button class="btn btn-stop" id="stopAll">■ 停止</button>
+    <label>速さ <input type="range" id="rate" min="0.5" max="1.2" step="0.05" value="0.9"> <span id="rateVal">0.9</span></label>
+  </div>
+  <div id="content"></div>
+  <div class="note" id="cueNote"></div>
+</main>
+
+<div class="total-bar" id="totalBar">
+  <span>このスピーチの平均スコア:</span><span id="totalScore">—</span>
+</div>
+
+<script>
+// ------------------------- DATA -------------------------
+const INTRO_AFF = ["Thank you chairperson, timekeeper and judges.","My name is A and my name is B.","Let us start our affirmative constructive speech.","We have two advantages to this proposal."];
+const INTRO_NEG = ["Thank you chairperson, timekeeper and judges.","My name is A and my name is B.","Let us start our negative constructive speech.","We have two disadvantages to this proposal."];
+const CLOSE_AFF = ["For these reasons, I am convinced that esports should be considered a sport."];
+const CLOSE_NEG = ["For these reasons, I am convinced that esports should not be considered a sport."];
+
+const SPEECHES = {
+  aff: [
+    {
+      id:"AD 1", title:"Esports share many of the same key characteristics as more traditional sports.",
+      sections:[
+        {label:"Present situation", sents:[
+          "Esports are highly competitive, strictly regulated and require a high level of discipline and practice.",
+          "Esports players train much in the same way that professional sports players train and compete.",
+          "While esports may not include the physical component of most traditional sports, they are similar to sports like archery, which is more about accuracy, concentration and skill."]},
+        {label:"Effect", sents:[
+          "Esports players would gain the respect they deserve and be seen as athletes in their own right."]},
+        {label:"Importance", sents:[
+          "The hard work and discipline shown by esports players should be recognized, and this may even lead to esports inclusion in international competitions such as the Olympics."]}
+      ]
+    },
+    {
+      id:"AD 2", title:"The entertainment value of esports is the same as more traditional sports.",
+      sections:[
+        {label:"Present situation", sents:[
+          "With the advent of video game streaming online, esports are attracting more and more fans and players.",
+          "Esports now has an estimated worldwide viewership of 500 million people, a much larger amount than many traditional sports."]},
+        {label:"Effect", sents:[
+          "When esports are shown on major TV channels, there will be larger competitions or events and more media coverage for their viewership to enjoy."]},
+        {label:"Importance", sents:[
+          "Life can be very busy and stressful for many people.",
+          "Therefore entertainment is an important part of helping people relax and enjoy a good quality of life."]}
+      ]
+    },
+    {
+      id:"AD 3", title:"There is an increased interest in STEM subjects among young people thanks to esports.",
+      sections:[
+        {label:"Present situation", sents:[
+          "There is growing evidence that many players of esports at university level are studying STEM related fields and wish to work in those fields in the future.",
+          "Some universities are providing scholarships to esports players and help them go on into careers such as software engineering and design."]},
+        {label:"Effect", sents:[
+          "If esports are recognized as official sports, they will contribute to the further development of science and technology."]},
+        {label:"Importance", sents:[
+          "Science and technology is now a major part of modern life.",
+          "Providing the many skilled workers needed to fulfill careers in STEM related jobs is important to Japan's economy, society and future."]}
+      ]
+    },
+    {
+      id:"AD 4", title:"Esports help develop important life skills such as teamwork, leadership and communication.",
+      sections:[
+        {label:"Present situation", sents:[
+          "Unlike playing video games, esports players have a chance to socialize with their peers and work together to achieve common goals.",
+          "Esports exhibit the same level of collaboration as team sports such as soccer, baseball or volleyball.",
+          "Players compete together in front of audiences to achieve goals."]},
+        {label:"Effect", sents:[
+          "By playing esports, young people can learn important life skills that will be essential in their lives and future careers.",
+          "It will help people who live in isolated communities feel more connected to others."]},
+        {label:"Importance", sents:[
+          "If young people are able to build successful, fulfilling careers, it would reduce unemployment.",
+          "Also, if people can build better relationships with each other, we can have a more connected and tolerant society."]}
+      ]
+    }
+  ],
+  neg: [
+    {
+      id:"DA 1", title:"Esports do not have the same physical component as traditional sports.",
+      sections:[
+        {label:"Present situation", sents:[
+          "Sports have generally been recognised as sports because of their physical nature.",
+          "Athletes must train their bodies to meet the demands of their sport.",
+          "Esports players on the other hand train their minds.",
+          "Games like chess also require mental training, yet they are not considered a sport."]},
+        {label:"Effect", sents:[
+          "If esports became recognised as a sport, it would encourage young people to stop taking part in more physical traditional sports."]},
+        {label:"Significance", sents:[
+          "While the benefits of the physical component of traditional sports are obvious, playing video games can cause many health problems.",
+          "More people will become inactive and gain weight.",
+          "Esports can also cause muscle pain and poor eyesight."]}
+      ]
+    },
+    {
+      id:"DA 2", title:"Esports are owned by software companies.",
+      sections:[
+        {label:"Present situation", sents:[
+          "In order to play esports, you need to buy the software and equipment from the company which owns that game.",
+          "Both of which are regularly updated, meaning you will have to buy them again and again.",
+          "Esports are simply a clever marketing opportunity for video game companies."]},
+        {label:"Effect", sents:[
+          "If esports became an official sport like the Olympics, the leadership of esports would be held by major video game companies.",
+          "Esports players will be unconsciously controlled by those companies."]},
+        {label:"Significance", sents:[
+          "Sport independence is very important.",
+          "That is, the contents of sports must not depend on the interests of any particular companies."]}
+      ]
+    },
+    {
+      id:"DA 3", title:"Esports are not inclusive of all people.",
+      sections:[
+        {label:"Present situation", sents:[
+          "These days, sports are meant to be inclusive of all people, regardless of gender or race.",
+          "Yet esports are largely dominated by men.",
+          "Only 8% of professional gamers were women."]},
+        {label:"Effect", sents:[
+          "Supporting this proposition sends the wrong message to women and other excluded minorities."]},
+        {label:"Significance", sents:[
+          "Sports are and should always be inclusive of everyone.",
+          "They are enjoyed by people all over the world and therefore have an important role to play in promoting gender and racial equality."]}
+      ]
+    },
+    {
+      id:"DA 4", title:"Esports are often violent.",
+      sections:[
+        {label:"Present situation", sents:[
+          "Many of the most popular esport games are violent, involve war, killing and guns.",
+          "This is not a good message for young fans of esports.",
+          "In 2018 the Olympic Committee said that esports are too violent to be part of the Olympics."]},
+        {label:"Effect", sents:[
+          "Playing or viewing violent games that involve killing and themes of war can desensitize young people and even lead to violent behaviour."]},
+        {label:"Significance", sents:[
+          "Sports have the ability to unite nations from around the world through healthy competition.",
+          "They should promote peace and tolerance among people, not war and violence."]}
+      ]
+    }
+  ]
+};
+
+// ------------------------- STATE -------------------------
+let side = "aff", idx = 0, voices = [], playQueue = [], playing = false;
+const synth = window.speechSynthesis;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR) document.getElementById('srWarn').style.display='block';
+
+function loadVoices(){ voices = synth.getVoices().filter(v=>v.lang.startsWith('en')); }
+loadVoices();
+if(synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+function pickVoice(){
+  return voices.find(v=>/Google US English/i.test(v.name))
+      || voices.find(v=>v.lang==='en-US')
+      || voices[0] || null;
+}
+
+// ------------------------- RENDER -------------------------
+function buildSpeechTabs(){
+  const wrap = document.getElementById('speechTabs');
+  wrap.innerHTML='';
+  SPEECHES[side].forEach((sp,i)=>{
+    const b=document.createElement('button');
+    b.className='speech-tab'+(i===idx?' active':'');
+    b.textContent=sp.id;
+    b.onclick=()=>{idx=i;render();};
+    wrap.appendChild(b);
+  });
+}
+
+function render(){
+  stopAll();
+  document.body.className = side+'-mode';
+  buildSpeechTabs();
+  const sp = SPEECHES[side][idx];
+  const intro = side==='aff'?INTRO_AFF:INTRO_NEG;
+  const close = side==='aff'?CLOSE_AFF:CLOSE_NEG;
+  document.getElementById('speechTitle').innerHTML =
+    `${sp.id}: ${sp.title}<small>${side==='aff'?'Affirmative Constructive Speech':'Negative Constructive Speech'}</small>`;
+  document.getElementById('cueNote').textContent =
+    side==='aff'
+    ? '📌 Introduction は1つ目のADの前にだけ読みます。最後の一文(For these reasons…)は2つ目のADの最後にだけ読みます。'
+    : '📌 Introduction は1つ目のDAの前にだけ読みます。最後の一文(For these reasons…)は2つ目のDAの最後にだけ読みます。';
+
+  const c = document.getElementById('content');
+  c.innerHTML='';
+  const secs = [
+    {label:'Introduction(1つ目の前だけ)', sents:intro},
+    {label:`${sp.id} — Main claim`, sents:[sp.id.replace(' ','')+': '+sp.title]},
+    ...sp.sections,
+    {label:'Closing(2つ目の最後だけ)', sents:close}
+  ];
+  secs.forEach(sec=>{
+    const d=document.createElement('div'); d.className='section';
+    const h=document.createElement('div'); h.className='section-label'; h.textContent=sec.label;
+    d.appendChild(h);
+    sec.sents.forEach(text=>d.appendChild(makeSentenceCard(text)));
+    c.appendChild(d);
+  });
+  updateTotal();
+}
+
+function makeSentenceCard(text){
+  const card=document.createElement('div'); card.className='sentence';
+  card.dataset.text=text;
+  const p=document.createElement('div'); p.className='sent-text'; p.textContent=text;
+  const tools=document.createElement('div'); tools.className='sent-tools';
+
+  const bL=document.createElement('button'); bL.className='mini listen'; bL.textContent='🔊 聴く';
+  bL.onclick=()=>{stopAll(); speak(text, card);};
+
+  const bR=document.createElement('button'); bR.className='mini rec'; bR.textContent='🎤 録音';
+  const score=document.createElement('span'); score.className='score';
+  const diff=document.createElement('div'); diff.className='diff';
+  if(SR){
+    bR.onclick=()=>recordAndScore(text, bR, score, diff, card);
+  }else{ bR.disabled=true; }
+
+  tools.append(bL,bR,score);
+  card.append(p,tools,diff);
+  return card;
+}
+
+// ------------------------- TTS -------------------------
+function speak(text, card, onend){
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice(); if(v) u.voice=v;
+  u.lang='en-US';
+  u.rate=parseFloat(document.getElementById('rate').value);
+  if(card){ u.onstart=()=>card.classList.add('playing'); }
+  u.onend=()=>{ if(card) card.classList.remove('playing'); if(onend) onend(); };
+  synth.speak(u);
+}
+
+document.getElementById('rate').oninput=e=>document.getElementById('rateVal').textContent=e.target.value;
+
+document.getElementById('playAll').onclick=()=>{
+  stopAll(); playing=true;
+  const cards=[...document.querySelectorAll('.sentence')];
+  let i=0;
+  const next=()=>{
+    if(!playing || i>=cards.length){playing=false;return;}
+    const card=cards[i++];
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    speak(card.dataset.text, card, next);
+  };
+  next();
+};
+function stopAll(){ playing=false; synth.cancel(); document.querySelectorAll('.sentence.playing').forEach(c=>c.classList.remove('playing')); }
+document.getElementById('stopAll').onclick=stopAll;
+
+// ------------------------- RECOGNITION & SCORING -------------------------
+let activeRec=null;
+function norm(s){return s.toLowerCase().replace(/[0-9]+%/g,m=>m.replace('%',' percent')).replace(/[^a-z0-9' ]+/g,' ').replace(/\s+/g,' ').trim();}
+
+function recordAndScore(target, btn, scoreEl, diffEl, card){
+  if(activeRec){ activeRec.stop(); return; }
+  stopAll();
+  const rec=new SR();
+  rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1; rec.continuous=true;
+  let heard='';
+  activeRec=rec;
+  btn.classList.add('recording'); btn.textContent='⏹ 停止';
+  rec.onresult=e=>{ for(const r of e.results){ if(r.isFinal) heard+=' '+r[0].transcript; } };
+  rec.onerror=()=>finish();
+  rec.onend=()=>finish();
+  // auto stop after generous time
+  const timer=setTimeout(()=>rec.stop(), 30000);
+
+  function finish(){
+    clearTimeout(timer);
+    activeRec=null;
+    btn.classList.remove('recording'); btn.textContent='🎤 録音';
+    const tWords=norm(target).split(' ').filter(Boolean);
+    const hWords=norm(heard).split(' ').filter(Boolean);
+    if(hWords.length===0){
+      scoreEl.className='score low'; scoreEl.textContent='音声を認識できませんでした';
+      diffEl.classList.remove('show');
+      return;
+    }
+    // word matching (multiset)
+    const pool={}; hWords.forEach(w=>pool[w]=(pool[w]||0)+1);
+    let hit=0;
+    const marked=tWords.map(w=>{
+      if(pool[w]>0){pool[w]--;hit++;return `<span class="hit">${w}</span>`;}
+      return `<span class="miss">${w}</span>`;
+    });
+    const pct=Math.round(hit/tWords.length*100);
+    card.dataset.score=pct;
+    scoreEl.textContent=pct+'点';
+    scoreEl.className='score '+(pct>=85?'good':pct>=60?'mid':'low');
+    diffEl.innerHTML=marked.join(' ')+`<span class="heard">🎧 認識結果: ${heard.trim()||'—'}</span>`;
+    diffEl.classList.add('show');
+    updateTotal();
+  }
+  rec.start();
+}
+
+function updateTotal(){
+  const scored=[...document.querySelectorAll('.sentence')].map(c=>c.dataset.score).filter(Boolean).map(Number);
+  const bar=document.getElementById('totalBar');
+  if(scored.length===0){bar.classList.remove('show');return;}
+  const avg=Math.round(scored.reduce((a,b)=>a+b,0)/scored.length);
+  document.getElementById('totalScore').textContent=`${avg}点(${scored.length}文評価済み)`;
+  bar.classList.add('show');
+}
+
+// ------------------------- TABS -------------------------
+document.querySelectorAll('.side-tab').forEach(b=>{
+  b.onclick=()=>{
+    side=b.dataset.side; idx=0;
+    document.querySelectorAll('.side-tab').forEach(x=>x.classList.toggle('active',x===b));
+    render();
+  };
+});
+
+render();
+</script>
+</body>
+</html>
